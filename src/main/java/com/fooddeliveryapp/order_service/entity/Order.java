@@ -20,6 +20,7 @@ import java.util.List;
 @Table(name = "orders")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Order {
     
@@ -31,6 +32,7 @@ public class Order {
     private String customerEmail;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
 
     private String pickupLocation;

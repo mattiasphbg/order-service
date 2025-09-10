@@ -36,6 +36,7 @@ public class OrderItem {
     @ElementCollection
     @CollectionTable(name = "order_item_notes", joinColumns = @JoinColumn(name = "order_item_id"))
     @Column(name = "note")
+    @Builder.Default
     private List<String> notes = new ArrayList<>();
 
 

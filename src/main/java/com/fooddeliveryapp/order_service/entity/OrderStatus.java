@@ -4,6 +4,13 @@ public enum OrderStatus {
     // Enum constants with associated description and final state flag
     PENDING("Order received, awaiting initial processing", false),
     Placed("Order has been placed and is being processed", false),
+    ACCEPTED("Order has been accepted", false),
+    PREPARING("Order is being prepared", false),
+    In_TRANSIT("Order is on the way", false),
+    DELIVERED("Order has been delivered", true),
+    CANCELLED("Order has been cancelled", true),
+    FAILED("Order failed to be processed", true),
+    COMPLETED("Order has been completed", true);
   
 
     private final String description;
@@ -24,9 +31,5 @@ public enum OrderStatus {
         return isFinalState;
     }
 
-    // Optional: A method to check if a transition is valid (more complex, often handled by a state machine pattern)
-    // public boolean isValidTransition(OrderStatus newStatus) {
-    //     // Implement state machine logic here
-    //     return true; // Placeholder
-    // }
+
 }

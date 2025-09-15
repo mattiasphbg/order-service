@@ -16,7 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
       List<Order> findByStatus(OrderStatus status);
       List<Order> findByCustomerIdAndStatus(String customerId, OrderStatus status);
       List<Order> findByTotalAmountGreaterThan(BigDecimal amount);
-      Optional<Order> findByPaymentTransactionId(String paymentTranstionID);
+      Optional<Order> findByPaymentTransactionId(String paymentTransitionID);
       
       
 }

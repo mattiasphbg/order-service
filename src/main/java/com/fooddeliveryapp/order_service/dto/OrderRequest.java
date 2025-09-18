@@ -1,0 +1,53 @@
+package com.fooddeliveryapp.order_service.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class OrderRequest {
+    @NotNull(message = "Customer ID is required")
+    private Long customerId;
+
+    @NotBlank(message = "Customer email is required")
+    @Email(message = "Invalid email format")
+    private String customerEmail;
+
+    @NotEmpty(message = "Order must contain at least one item")
+    @Valid
+    private List<OrderItemRequest> items;
+
+    @NotBlank(message = "Pickup location is required")
+    private String pickupLocation;
+
+    @NotBlank(message = "Dropoff location is required")
+    private String dropoffLocation;
+
+    @NotNull(message = "SubTotal is required")
+    @DecimalMin(value= "0.0", inclusive = false, message = "SubTotal must be greater than 0")
+    private BigDecimal subTotal;
+
+    @NotNull(message = "Delivery fee is required")
+    @DecimalMin(value= "0.0", message = "Delivery fee must be greater than 0")
+    private BigDecimal deliveryFee;
+
+    @DecimalMin(value= "0.0", message = "Tax amount must be greater than 0")
+    private BigDecimal taxAmount;
+
+    @DecimalMin(value = "0.0", message = "Tip amount must be greater than 0")
+    private BigDecimal tipAmount;
+
+    @NotBlank(message = "Currency is required")
+    @Size(min = 3, max = 3, message = "Currency must be 3 characters")
+    private String currency;
+}

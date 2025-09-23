@@ -77,7 +77,7 @@ public class OrderService {
     public OrderResponse updateOrder(Long orderId, OrderRequest orderRequest){
         Order existingOrder = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
-        existingOrder.setCustomerId(orderRequest.getCustomerId());
+        existingOrder.setCustomerId(orderRequest.getCustomerId().toString());
         existingOrder.setCustomerEmail(orderRequest.getCustomerEmail());
         existingOrder.setPickupLocation(orderRequest.getPickupLocation());
         existingOrder.setDropoffLocation(orderRequest.getDropoffLocation());
@@ -85,14 +85,13 @@ public class OrderService {
         existingOrder.setDeliveryFee(orderRequest.getDeliveryFee());
         existingOrder.setTaxAmount(orderRequest.getTaxAmount());
         existingOrder.setTipAmount(orderRequest.getTipAmount());
-        existingOrder.setTotalAmount(orderRequest.getTotalAmount());
         existingOrder.setCurrency(orderRequest.getCurrency());
 
         existingOrder.getItems().clear();
         orderRequest.getItems().forEach(itemRequest -> {
-            OrderItem item = mapToEntity(itemRequest);
-            item.setOrder(existingOrder);
-            existingOrder.getItems().add(item);
+            OrderItem orderItem = mapOrderItemRequestToEntity(itemRequest);
+            orderItem.setOrder(existingOrder); // Set the parent order
+            existingOrder.getItems().add(orderItem);
         });
 
         Order updatedOrder = orderRepository.save(existingOrder);
@@ -103,9 +102,10 @@ public class OrderService {
 
     @Transactional
     public void deleteOrder(Long orderId){
-        if(!orderRepository.existsById(orderId)) {
-            throw new EntityNotFoundException("Order not found with ID:", + orderId);
+        if (!orderRepository.existsById(orderId)) {
+            throw new EntityNotFoundException("Order not found with ID: " + orderId);
         }
+      
         orderRepository.deleteById(orderId);
         log.info("Order deleted from database with ID: {}", orderId);
     }
@@ -138,8 +138,75 @@ public class OrderService {
             order.setItems(orderItems);
         }
         return order;
+
         }
+    
+        
+    private OrderItem mapOrderItemRequestToEntity( OrderItemRequest itemRequest){
+
+        return OrderItem.builder()
+                 .productId(itemRequest.getProductId())
+                 .productName(itemRequest.getProductName())
+                 .quantity(itemRequest.getQuantity())
+                 .pricePerUnit(itemRequest.getPricePerUnit())
+                 .notes(itemRequest.getNotes() != null ? new ArrayList<>(itemRequest.getNotes()) : new ArrayList<>()).build();
+    }
+
+    private OrderResponse mapToResponseDto(Order order) {
+        List<OrderItemResponse> itemResponses = order.getItems().stream()
+                .map(this::mapOrderItemToResponseDto)
+                .collect(Collectors.toList());
+        return OrderResponse.builder()
+                .id(order.getId())
+                .customerId(order.getCustomerId() != null ? Long.valueOf(order.getCustomerId()) : null)
+                .customerEmail(order.getCustomerEmail())
+                .items(itemResponses)
+                .pickupLocation(order.getPickupLocation())
+                .dropoffLocation(order.getDropoffLocation())
+                .subtotal(order.getSubtotal() != null ? BigDecimal.valueOf(order.getSubtotal().doubleValue()  ): BigDecimal.ZERO)
+                .deliveryFee(order.getDeliveryFee())
+                .taxAmount(order.getTaxAmount())
+                .tipAmount(order.getTipAmount())
+                .totalAmount(order.getTotalAmount())
+                .currency(order.getCurrency())
+                .status(order.getStatus())
+                .driverId(order.getDriverId())
+                .restaurantId(order.getRestaurantId())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .paymentTransactionId(order.getPaymentTransactionId())
+                .build();
+    }
+
+    private OrderItemResponse mapOrderItemToResponseDto(OrderItem orderItem) {
+        return OrderItemResponse.builder()
+                .id(orderItem.getId())
+                .productId(orderItem.getProductId())
+                .productName(orderItem.getProductName())
+                .quantity(orderItem.getQuantity())
+                .pricePerUnit(orderItem.getPricePerUnit())
+                .notes(orderItem.getNotes() != null ? new ArrayList<>(orderItem.getNotes()) :
+                new ArrayList<>()).build();
+    }
+
+    private OrderPlacedEvent mapToOrderPlacedEvent(Order order) {
+        return OrderPlacedEvent.builder()
+                .eventId(UUID.randomUUID().toString())
+                .timeStamp(Instant.now())
+                .eventType("OrderPlaced")
+                .sourceService("order-service")
+                .orderId(order.getId())
+                .customerId(order.getCustomerId())
+                .customerEmail(order.getCustomerEmail())
+                .totalAmount(order.getTotalAmount())
+                .currency(order.getCurrency())
+                .pickupLocation(order.getPickupLocation())
+                .dropoffLocation(order.getDropoffLocation())
+                .status(order.getStatus())
+                .build();
                 
     }
 
 }
+
+

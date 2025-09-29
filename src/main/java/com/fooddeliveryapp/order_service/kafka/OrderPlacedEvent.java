@@ -24,7 +24,7 @@ public class OrderPlacedEvent {
     private String sourceService;
 
     private Long orderId;
-    private Long customerId;
+    private String customerId;
     private String customerEmail;
     private BigDecimal totalAmount;
     private String currency;

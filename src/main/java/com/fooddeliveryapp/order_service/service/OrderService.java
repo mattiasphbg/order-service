@@ -14,7 +14,7 @@ import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.data.repository.query.Param;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,18 +111,21 @@ public class OrderService {
     }
 
     private Order mapToEntity(OrderRequest request){
+
+        BigDecimal totalAmount = request.getSubTotal()
+        .add(request.getDeliveryFee())
+        .add(Optional.ofNullable(request.getTaxAmount()).orElse(BigDecimal.ZERO))
+        .add(Optional.ofNullable(request.getTipAmount()).orElse(BigDecimal.ZERO));
+
         Order order = Order.builder().customerId(request.getCustomerId())
-                .customerEmail(request.getCustomerEmail()).
+                .customerEmail(request.getCustomerEmail())
                 .pickupLocation(request.getPickupLocation())
-                .dropoffLocation(request.getDropoffLocation()).
-                .subtotal(request.getSubTotal()).
-                .deliveryFee(request.getDeliveryFee()).
-                .taxAmount(request.getTaxAmount()).
-                .tipAmount(request.getTipAmount()).
-                .totalAmount(request.getTotalAmount()).
-                         add(request.getDeliveryFee()).
-                         add(Optional.ofNullable(request.getTaxAmount()).orElse(BigDecimal.ZERO)).
-                         add(Optional.ofNullable(request.getTipAmount()).orElse(BigDecimal.ZERO))
+                .dropoffLocation(request.getDropoffLocation())
+                .subtotal(request.getSubTotal())
+                .deliveryFee(request.getDeliveryFee())
+                .taxAmount(request.getTaxAmount())
+                .tipAmount(request.getTipAmount())
+                .totalAmount(totalAmount)
                 .currency(request.getCurrency())
                 .status(OrderStatus.PENDING).build();
 
@@ -130,7 +133,7 @@ public class OrderService {
             List<OrderItem> orderItems = request.getItems().stream()
                       .map(itemRequest ->{
 
-                          OrderItem item = mapOrderItemRequestToEntity(request);
+                          OrderItem item = mapOrderItemRequestToEntity(itemRequest);
                           item.setOrder(order);
                           return item;
                         }
@@ -142,7 +145,7 @@ public class OrderService {
         }
     
         
-    private OrderItem mapOrderItemRequestToEntity( OrderItemRequest itemRequest){
+    private OrderItem mapOrderItemRequestToEntity(OrderItemRequest itemRequest){
 
         return OrderItem.builder()
                  .productId(itemRequest.getProductId())
@@ -163,7 +166,7 @@ public class OrderService {
                 .items(itemResponses)
                 .pickupLocation(order.getPickupLocation())
                 .dropoffLocation(order.getDropoffLocation())
-                .subtotal(order.getSubtotal() != null ? BigDecimal.valueOf(order.getSubtotal().doubleValue()  ): BigDecimal.ZERO)
+                .subTotal(order.getSubtotal() != null ? BigDecimal.valueOf(order.getSubtotal().doubleValue()  ): BigDecimal.ZERO)
                 .deliveryFee(order.getDeliveryFee())
                 .taxAmount(order.getTaxAmount())
                 .tipAmount(order.getTipAmount())

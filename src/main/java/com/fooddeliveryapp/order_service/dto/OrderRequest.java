@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 public class OrderRequest {
     @NotNull(message = "Customer ID is required")
-    private Long customerId;
+    private String customerId;
 
     @NotBlank(message = "Customer email is required")
     @Email(message = "Invalid email format")
@@ -32,6 +32,11 @@ public class OrderRequest {
 
     @NotBlank(message = "Dropoff location is required")
     private String dropoffLocation;
+
+
+    @NotNull(message = "Total amount is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be greater than 0")
+    private BigDecimal totalAmount;
 
     @NotNull(message = "SubTotal is required")
     @DecimalMin(value= "0.0", inclusive = false, message = "SubTotal must be greater than 0")

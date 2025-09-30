@@ -4,7 +4,8 @@ package com.fooddeliveryapp.order_service.controller;
 import com.fooddeliveryapp.order_service.dto.OrderRequest;
 import com.fooddeliveryapp.order_service.dto.OrderResponse;
 import com.fooddeliveryapp.order_service.service.OrderService;
-import jakarta.persistence.EntityExistsException;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -63,5 +64,32 @@ public class OrderController {
         return ResponseEntity.ok(updatedOrder);                                                 
     }
 
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long orderId) {
+        log.info("Received request to delete order with ID: {}", orderId);
+        orderService.deleteOrder(orderId);
+        log.info("Order with ID {} deleted successfully.", orderId);
+        return ResponseEntity.noContent().build();
+    }
 
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<String> handleNotFoundException(EntityNotFoundException ex) {
+        log.warn("EntityNotFoundException occurred: {}", ex.getMessage());
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<List<String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() +": "+ error.getDefaultMessage())
+                .collect(Collectors.toList());
+        log.warn("Validation errors occurred: {}", errors);
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    
 }

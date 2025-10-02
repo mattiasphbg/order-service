@@ -5,11 +5,13 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -34,9 +36,16 @@ public class OrderRequest {
     private String dropoffLocation;
 
 
-    @NotNull(message = "Total amount is required")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be greater than 0")
-    private BigDecimal totalAmount;
+  
+    @Getter(lazy = true)
+    private final BigDecimal totalAmount = calculateTotalAmount();
+    
+    private BigDecimal calculateTotalAmount() {
+        return subTotal
+            .add(deliveryFee)
+            .add(Optional.ofNullable(taxAmount).orElse(BigDecimal.ZERO))
+            .add(Optional.ofNullable(tipAmount).orElse(BigDecimal.ZERO));
+    }
 
     @NotNull(message = "SubTotal is required")
     @DecimalMin(value= "0.0", inclusive = false, message = "SubTotal must be greater than 0")

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.time.Instant;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 
@@ -46,9 +48,21 @@ public class Order {
     private BigDecimal taxAmount;
     @Column(precision = 10, scale = 2)
     private BigDecimal tipAmount;
-    @Column(precision = 10, scale = 2)
-    private BigDecimal totalAmount;
+     
+    @Getter(lazy = true)
+    private final BigDecimal totalAmount = calculateTotalAmount();
+    
+    private BigDecimal calculateTotalAmount() {
+        return subtotal
+            .add(deliveryFee)
+            .add(Optional.ofNullable(taxAmount).orElse(BigDecimal.ZERO))
+            .add(Optional.ofNullable(tipAmount).orElse(BigDecimal.ZERO));
+    }
+    
     private String currency;
+
+    
+
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

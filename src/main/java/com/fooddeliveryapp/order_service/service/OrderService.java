@@ -23,7 +23,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -112,10 +111,7 @@ public class OrderService {
 
     private Order mapToEntity(OrderRequest request){
 
-        BigDecimal totalAmount = request.getSubTotal()
-        .add(request.getDeliveryFee())
-        .add(Optional.ofNullable(request.getTaxAmount()).orElse(BigDecimal.ZERO))
-        .add(Optional.ofNullable(request.getTipAmount()).orElse(BigDecimal.ZERO));
+      
 
         Order order = Order.builder().customerId(request.getCustomerId())
                 .customerEmail(request.getCustomerEmail())
@@ -125,7 +121,6 @@ public class OrderService {
                 .deliveryFee(request.getDeliveryFee())
                 .taxAmount(request.getTaxAmount())
                 .tipAmount(request.getTipAmount())
-                .totalAmount(totalAmount)
                 .currency(request.getCurrency())
                 .status(OrderStatus.PENDING).build();
 
